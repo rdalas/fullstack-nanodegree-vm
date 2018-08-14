@@ -1,84 +1,36 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 app = Flask(__name__)
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Restaurant, MenuItem
+from database import Base, Categoria, Item
 
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///catalogo.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-@app.route('/restaurants/<int:restaurant_id>/menu/JSON')
-def restaurantMenuJSON(restaurant_id):
-	restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
-	items = session.query(MenuItem).filter_by(restaurant_id = restaurant_id).all()
-	return jsonify(MenuItems=[i.serialize for i in items])
-
-
-
-#ADD JSON API ENDPOINT HERE
-
 
 @app.route('/')
-@app.route('/restaurants/<int:restaurant_id>/menu')
-def restaurantMenu(restaurant_id):
-	restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
-	items = session.query(MenuItem).filter_by(restaurant_id = restaurant_id)
-	return render_template('menu.html', restaurant=restaurant, items = items, restaurant_id = restaurant_id)
+@app.route('/catalog')
+def siteHome():
+	categorias_Menu = session.query(Categoria).all()
+	ultimosItens = session.query(Item, Categoria).join(Categoria).order_by(desc(Item.data_inclusao)).limit(10)
+	return render_template('home.html', categorias_Menu=categorias_Menu, ultimosItens=ultimosItens)
 
 
-
-
-@app.route('/restaurants/<int:restaurant_id>/new', methods=['GET','POST'])
-def newMenuItem(restaurant_id):
-
-	if request.method == 'POST':
-		newItem = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
-		session.add(newItem)
-		session.commit()
-		return redirect(url_for('restaurantMenu', restaurant_id = restaurant_id))
-	else:
-		return render_template('newmenuitem.html', restaurant_id = restaurant_id)
-
-
-
-
-@app.route('/restaurants/<int:restaurant_id>/<int:menu_id>/edit', methods = ['GET', 'POST'])
-def editMenuItem(restaurant_id, menu_id):
-	editedItem = session.query(MenuItem).filter_by(id = menu_id).one()
-	if request.method == 'POST':
-		if request.form['name']:
-			editedItem.name = request.form['name']
-		if request.form['description']:
-			editedItem.description = request.form['name']
-		if request.form['price']:
-			editedItem.price = request.form['price']
-		if request.form['course']:
-			editedItem.course = request.form['course']
-		session.add(editedItem)
-		session.commit()
-		return redirect(url_for('restaurantMenu', restaurant_id = restaurant_id))
-	else:
-
-		return render_template('editmenuitem.html', restaurant_id = restaurant_id, menu_id = menu_id, item = editedItem)
-
-
-
-@app.route('/restaurants/<int:restaurant_id>/<int:menu_id>/delete', methods = ['GET','POST'])
-def deleteMenuItem(restaurant_id, menu_id):
-	itemToDelete = session.query(MenuItem).filter_by(id = menu_id).one()
-	if request.method == 'POST':
-		session.delete(itemToDelete)
-		session.commit()
-		return redirect(url_for('restaurantMenu', restaurant_id = restaurant_id))
-	else:
-		return render_template('deleteconfirmation.html', item = itemToDelete)
-
+@app.route('/catalog/<int:categoria_id>')
+@app.route('/catalog/<int:categoria_id>/items')
+def catalogo_itens(categoria_id):
+	categorias_Menu = session.query(Categoria).all()
+	categoria = session.query(Categoria).filter_by(id=categoria_id).one()
+	query = session.query(Item).filter_by(categoria_id=categoria_id)
+	itens_Categoria = query.all()
+	contador = query.count()
+	return render_template('items.html', categorias_Menu=categorias_Menu, categoria=categoria, itens_Categoria=itens_Categoria, contador=contador)
 
 
 if __name__ == '__main__':
 	app.debug = True
-	app.run(host = '0.0.0.0', port = 5000)
+	app.run(host = '0.0.0.0', port = 8000)

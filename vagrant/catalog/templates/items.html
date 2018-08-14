@@ -9,11 +9,15 @@
 		</div>
 		{% endfor %}
 
-		{% for item in ultimosItens %}
 		</div>
-			<span><p>{{item.Item.nome}}{{item.Categoria.nome}}</p></span>
+			<span><p>{{categoria.nome}}{{contador}}</p></span>
 		</div>
-		{% endfor %}
+
+    {% for item in itens_Categoria %}
+    </div>
+      <span><p>{{item.nome}}</p></span>
+    </div>
+    {% endfor %}
 
 	</body>
 </html>
