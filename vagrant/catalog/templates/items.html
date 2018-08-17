@@ -3,9 +3,9 @@
 	</head>
 	<body>
 
-		{% for categoria in categorias_Menu %}
+		{% for categoria in categoriasMenu %}
 		</div>
-			<span><p>{{categoria.nome}}</p></span>
+			<a href = "{{url_for('catalogoItens', categoria_id = categoria.id)}}"><span><p>{{categoria.nome}}</p></span></a>
 		</div>
 		{% endfor %}
 
@@ -13,9 +13,9 @@
 			<span><p>{{categoria.nome}}{{contador}}</p></span>
 		</div>
 
-    {% for item in itens_Categoria %}
+    {% for item in itensCategoria %}
     </div>
-      <span><p>{{item.nome}}</p></span>
+      <a href = "{{url_for('descricaoItem', categoria_id = item.categoria_id, item_id=item.id)}}"><span><p>{{item.nome}}</p></span></a>
     </div>
     {% endfor %}
 

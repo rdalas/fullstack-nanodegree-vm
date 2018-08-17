@@ -3,15 +3,17 @@
 	</head>
 	<body>
 
-		{% for categoria in categorias_Menu %}
+		{% for categoria in categoriasMenu %}
 		</div>
-			<span><p>{{categoria.nome}}</p></span>
+			<a href = "{{url_for('catalogoItens', categoria_id = categoria.id)}}"><span><p>{{categoria.nome}}</p></span></a>
 		</div>
 		{% endfor %}
-
+		</div>
+			<a href = "{{url_for('adicionaItem',)}}"><span><p>Adiciona Item</p></span></a>
+		</div>
 		{% for item in ultimosItens %}
 		</div>
-			<span><p>{{item.Item.nome}}{{item.Categoria.nome}}</p></span>
+			<a href = "{{url_for('descricaoItem', categoria_id = item.Categoria.id, item_id=item.Item.id)}}"><span><p>{{item.Item.nome}}{{item.Categoria.nome}}</p></span></a>
 		</div>
 		{% endfor %}
 
