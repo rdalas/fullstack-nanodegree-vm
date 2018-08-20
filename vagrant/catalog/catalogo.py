@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 app = Flask(__name__)
 from datetime import date, datetime
 from sqlalchemy import create_engine, desc
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, joinedload
 from database import Base, Categoria, Item
 
 engine = create_engine('sqlite:///catalogo.db')
@@ -13,9 +13,9 @@ session = DBSession()
 
 
 @app.route('/catalog/JSON/')
-def catalogoJSON():
-    catalogo = session.query(Item).limit(1)
-    return jsonify(catalogo=catalogo.serialize)
+def catalogoJson():
+    categorias = session.query(Categoria).options(joinedload(Categoria.itens)).all()
+    return jsonify(catalogo=[dict(c.serialize, itens=[i.serialize for i in c.itens]) for c in categorias])
 
 
 @app.route('/')
