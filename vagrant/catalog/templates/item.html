@@ -15,5 +15,13 @@
       <span><p>{{item.descricao}}</p></span>
     </div>
 
+	</div>
+		<a href = "{{url_for('alteraItem', item_id=item.id)}}" ><span><p>Alterar Item</p></span></a>
+	</div>
+
+	</div>
+		<a href = "{{url_for('deletaItem', item_id=item.id)}}"><span><p>Deletar Item</p></span></a>
+	</div>
+
 	</body>
 </html>

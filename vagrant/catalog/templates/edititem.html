@@ -5,15 +5,15 @@
 </head>
 <body>
 
-<h1>Adiciona Item</h1>
+<h1>Altera Item</h1>
 
-<form action="{{url_for('adicionaItem')}}" method = 'post'>
+<form action="{{url_for('alteraItem', item_id=item.id)}}" method = 'post'>
 
 
 	<p>Nome:</p>
-		<input type ='text' size='30' name='nome'>
+		<input type ='text' size='30' name='nome' placeholder="{{item.nome}}">
 	<p>Descricao:</p>
-		<input type ='text' size='30' name='descricao'>
+		<input type ='text' size='30' name='descricao' placeholder="{{item.descricao}}">
 	<p>Categoria:</p>
   {% for categoria in categorias %}
 		<input type ='radio'  name='categoria_id' value ='{{categoria.id}}'>{{categoria.nome}}</br>
@@ -22,7 +22,7 @@
 	</br>
 
 
-<input type='submit' value='Create'>
+<input type='submit' value='Edit'>
 
 </form>
 

@@ -12,6 +12,12 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
+@app.route('/catalog/JSON/')
+def catalogoJSON():
+    catalogo = session.query(Item).limit(1)
+    return jsonify(catalogo=catalogo.serialize)
+
+
 @app.route('/')
 @app.route('/catalog/')
 def siteHome():
@@ -50,9 +56,9 @@ def adicionaItem():
 		return render_template('newitem.html', categorias=categorias)
 
 
-@app.route('/catalog/<int:categoria_id>/<int:item_id>/edit/', methods=['GET', 'POST'])
-def alteraItem(categoria_id, item_id):
-	item = session.query(Item).filter_by(categoria_id=categoria_id, id=item_id).one()
+@app.route('/catalog/<int:item_id>/edit/', methods=['GET', 'POST'])
+def alteraItem(item_id):
+	item = session.query(Item).filter_by(id=item_id).one()
 	if request.method == 'POST':
 			if request.form['nome']:
 				item.nome = request.form['nome']
@@ -60,12 +66,23 @@ def alteraItem(categoria_id, item_id):
 				item.descricao = request.form['descricao']
 			if request.form['categoria_id']:
 				item.categoria_id = request.form['categoria_id']
-			session.add(Item)
+			session.add(item)
 			session.commit()
 			return redirect(url_for('descricaoItem', categoria_id = item.categoria_id, item_id = item.id))
 	else:
 		categorias = session.query(Categoria).all()
-		return render_template('edititem.html', categoria_id=categoria_id, item_id=item_id, item=item, categorias=categorias)
+		return render_template('edititem.html', item=item, categorias=categorias)
+
+
+@app.route('/catalog/<int:item_id>/delete/', methods=['GET', 'POST'])
+def deletaItem(item_id):
+	itemToDelete = session.query(Item).filter_by(id=item_id).one()
+	if request.method == 'POST':
+		session.delete(itemToDelete)
+		session.commit()
+		return redirect(url_for('catalogoItens', categoria_id = itemToDelete.categoria_id))
+	else:
+		return render_template('deleteitem.html', itemToDelete=itemToDelete)
 
 
 if __name__ == '__main__':
