@@ -1,0 +1,25 @@
+.bg-cinza {
+  background-color: #ccccb3;
+}
+.bg-branco {
+  background-color: white;
+}
+.bg-darkblue {
+  color: white;
+  background-color: #000080;
+}
+.bg-laranja {
+  background-color: #ff3300;
+}
+.f-laranja{
+  color: #ff3300;
+}
+.f-darkblue{
+  color: #000080;
+}
+.f-cinza {
+  color: #ccccb3;
+}
+.border-darkblue{
+  border-color: #000080;
+}

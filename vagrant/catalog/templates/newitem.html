@@ -1,30 +1,52 @@
-<html>
-
-<head>
-
-</head>
-<body>
-
-<h1>Adiciona Item</h1>
-
-<form action="{{url_for('adicionaItem')}}" method = 'post'>
-
-
-	<p>Nome:</p>
-		<input type ='text' size='30' name='nome'>
-	<p>Descricao:</p>
-		<input type ='text' size='30' name='descricao'>
-	<p>Categoria:</p>
-  {% for categoria in categorias %}
-		<input type ='radio'  name='categoria_id' value ='{{categoria.id}}'>{{categoria.nome}}</br>
-  {% endfor %}
-
-	</br>
-
-
-<input type='submit' value='Create'>
-
-</form>
-
-</body>
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<!-- Meta tags Obrigatórias -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+		<link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+		<title>Project 4</title>
+	</head>
+	<body class="bg-cinza">
+		<nav class="navbar navbar-light bg-darkblue justify-content-around">
+			<a class="navbar-brand"><h2>Catalogo APP</h2></a>
+			<a class="btn btn-primary my-2 my-sm-0 bg-laranja border-darkblue" href="{{url_for('gdisconnect')}}" role="button">Logout</a>
+		</nav>
+		<main>
+			<div class="container justify-content-around mt-3 mt-md-5">
+				<div class="row mx-md-5 bg-branco">
+					<div class="col text-left border">
+						<h3 class="mb-3 f-darkblue">Adiciona Item</h3>
+						<form action="{{url_for('adicionaItem')}}" method = 'post'>
+							<div class="form-group">
+								<label for="formInputNome">Nome:</label>
+								<input type ='text' class="form-control" id="formInputNome" size='50' name='nome'>
+							</div>
+							<div class="form-group">
+								<label for="formInputDescricao">Descricao:</label>
+								<input type ='text' class="form-control" id="formInputDescricao" size='100' name='descricao'>
+							</div>
+							<div class="form-group">
+								<label>Categoria:</label>
+								{% for categoria in categorias %}
+								<div class="form-check">
+  								<input class="form-check-input" type="radio" name='categoria_id' value ='{{categoria.id}}' id="defaultCheck1">
+  								<label class="form-check-label" for="defaultCheck1">{{categoria.nome}}</label>
+								</div>
+								{% endfor %}
+							</div>
+							<input class="btn btn-outline-primary f-darkblue border-darkblue" type='submit' value='Incluir'>
+						</form>
+					</div>
+				</div>
+			</div>
+		</main>
+		<!-- JavaScript (Opcional) -->
+		<!-- jQuery primeiro, depois Popper.js, depois Bootstrap JS -->
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+	</body>
 </html>

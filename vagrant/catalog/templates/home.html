@@ -6,28 +6,28 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<!-- Bootstrap CSS -->
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
 		<title>Project 4</title>
 	</head>
-	<body>
-		<nav class="navbar navbar-light bg-light justify-content-around">
+	<body class="bg-cinza">
+		<nav class="navbar navbar-light bg-darkblue justify-content-around">
 			<a class="navbar-brand"><h2>Catalogo APP</h2></a>
-			<a class="btn btn-primary my-2 my-sm-0" href="{{url_for('gdisconnect')}}" role="button">Logout</a>
+			<a class="btn btn-primary my-2 my-sm-0 bg-laranja border-darkblue" href="{{url_for('gdisconnect')}}" role="button">Logout</a>
 		</nav>
 		<main>
 			<div class="container justify-content-around mt-3 mt-md-5">
-				<div class="row mx-md-5">
+				<div class="row mx-md-5 bg-branco">
 					<div class="col col-xl-2 text-left border">
-						<h3 class="mb-3">Categorias</h3>
+						<h3 class="mb-3 f-darkblue">Categorias</h3>
 						{% for categoria in categoriasMenu %}
-						<a href = "{{url_for('catalogoItens', categoria_id = categoria.id)}}"><span><p>{{categoria.nome}}</p></span></a>
+						<a href = "{{url_for('catalogoItens', categoria_id = categoria.id)}}"><p class="f-laranja">{{categoria.nome}}</p></a>
 						{% endfor %}
+						<a href = "{{url_for('adicionaItem')}}" type="button" class="btn btn-outline-primary f-darkblue border-darkblue">Adiciona Item</a>
 					</div>
 					<div class="col col-xl-10 text-left border">
-						<h3 class="mb-3">Últimos Itens</h3>
-						<a href = "{{url_for('adicionaItem')}}"><span><p>Adiciona Item</p></span></a>
+						<h3 class="mb-3 f-darkblue">Últimos Itens</h3>
 						{% for item in ultimosItens %}
-						<a href = "{{url_for('descricaoItem', categoria_id = item.Categoria.id, item_id=item.Item.id)}}"><span><p>{{item.Item.nome}}{{item.Categoria.nome}}</p></span></a>
+						<a href = "{{url_for('descricaoItem', categoria_id = item.Categoria.id, item_id=item.Item.id)}}"><p class="f-laranja">{{item.Item.nome}} <em>({{item.Categoria.nome}})</em></p></a>
 						{% endfor %}
 					</div>
 				</div>
