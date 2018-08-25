@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from datetime import date, datetime
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker, joinedload
 from database import Base, Categoria, Item
 
-from flask import session as login_session
+from flask import session as login_session, flash
 import random
 import string
 
@@ -17,10 +17,13 @@ import requests
 
 app = Flask(__name__)
 
-CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
+CLIENT_ID = json.loads(
+    open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Catalog Project"
 
-engine = create_engine('sqlite:///catalogo.db', connect_args={'check_same_thread': False})
+engine = create_engine(
+    'sqlite:///catalogo.db',
+    connect_args={'check_same_thread': False})
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -29,7 +32,9 @@ session = DBSession()
 
 @app.route('/login/')
 def showLogin():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+    state = ''.join(
+        random.choice(
+            string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
@@ -50,13 +55,16 @@ def gconnect():
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
-        response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
+        response = make_response(
+            json.dumps('Failed to upgrade the authorization code.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
 
     # Check that the access token is valid.
     access_token = credentials.access_token
-    url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' % access_token)
+    url = (
+        'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
+        % access_token)
     h = httplib2.Http()
     result = json.loads(h.request(url, 'GET')[1])
     # If there was an error in the access token info, abort.
@@ -68,13 +76,15 @@ def gconnect():
     # Verify that the access token is used for the intended user.
     gplus_id = credentials.id_token['sub']
     if result['user_id'] != gplus_id:
-        response = make_response(json.dumps("Token's user ID doesn't match given user ID."), 401)
+        response = make_response(
+            json.dumps("Token's user ID doesn't match given user ID."), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
 
     # Verify that the access token is valid for this app.
     if result['issued_to'] != CLIENT_ID:
-        response = make_response(json.dumps("Token's client ID does not match app's."), 401)
+        response = make_response(
+            json.dumps("Token's client ID does not match app's."), 401)
         print "Token's client ID does not match app's."
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -82,7 +92,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'), 200)
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -107,7 +118,8 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;'
+    output += '-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
@@ -119,13 +131,16 @@ def gdisconnect():
     access_token = login_session.get('access_token')
     if access_token is None:
         print 'Access Token is None'
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     print 'In gdisconnect access token is %s', access_token
     print 'User name is: '
     print login_session['username']
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    url = (
+        'https://accounts.google.com/o/oauth2/revoke?token=%s'
+        % login_session['access_token'])
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
@@ -140,23 +155,33 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
 
 @app.route('/catalog/JSON/')
 def catalogoJson():
-    categorias = session.query(Categoria).options(joinedload(Categoria.itens)).all()
-    return jsonify(catalogo=[dict(c.serialize, itens=[i.serialize for i in c.itens]) for c in categorias])
+    categorias = session.query(Categoria).options(joinedload(Categoria.itens))
+    categorias = categorias.all()
+    return jsonify(
+        catalogo=[
+            dict(
+                c.serialize,
+                itens=[i.serialize for i in c.itens]) for c in categorias])
 
 
 @app.route('/')
 @app.route('/catalog/')
 def siteHome():
     categoriasMenu = session.query(Categoria).all()
-    ultimosItens = session.query(Item, Categoria).join(Categoria).order_by(desc(Item.data_inclusao)).limit(10)
-    return render_template('home.html', categoriasMenu=categoriasMenu, ultimosItens=ultimosItens)
+    ultimosItens = session.query(Item, Categoria).join(Categoria)
+    ultimosItens = ultimosItens.order_by(desc(Item.data_inclusao)).limit(10)
+    return render_template(
+        'home.html',
+        categoriasMenu=categoriasMenu,
+        ultimosItens=ultimosItens)
 
 
 @app.route('/catalog/<int:categoria_id>/')
@@ -178,7 +203,8 @@ def catalogoItens(categoria_id):
 @app.route('/catalog/<int:categoria_id>/<int:item_id>/')
 def descricaoItem(categoria_id, item_id):
     categoria = session.query(Categoria).filter_by(id=categoria_id).one()
-    item = session.query(Item).filter_by(categoria_id=categoria_id, id=item_id).one()
+    item = session.query(Item).filter_by(categoria_id=categoria_id, id=item_id)
+    item = item.one()
     return render_template('item.html', categoria=categoria, item=item)
 
 
