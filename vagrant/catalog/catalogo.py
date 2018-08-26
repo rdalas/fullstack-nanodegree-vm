@@ -120,7 +120,7 @@ def gconnect():
     output += login_session['picture']
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;'
     output += '-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("you are now logged in as %s" % login_session['username'])
+    flash("you are now logged in as %s" % login_session['email'])
     print "done!"
     return output
 
@@ -181,7 +181,8 @@ def siteHome():
     return render_template(
         'home.html',
         categoriasMenu=categoriasMenu,
-        ultimosItens=ultimosItens)
+        ultimosItens=ultimosItens,
+        login_session=login_session)
 
 
 @app.route('/catalog/<int:categoria_id>/')
@@ -197,7 +198,8 @@ def catalogoItens(categoria_id):
         categoriasMenu=categoriasMenu,
         categoria=categoria,
         itensCategoria=itensCategoria,
-        contador=contador)
+        contador=contador,
+        login_session=login_session)
 
 
 @app.route('/catalog/<int:categoria_id>/<int:item_id>/')
@@ -205,7 +207,11 @@ def descricaoItem(categoria_id, item_id):
     categoria = session.query(Categoria).filter_by(id=categoria_id).one()
     item = session.query(Item).filter_by(categoria_id=categoria_id, id=item_id)
     item = item.one()
-    return render_template('item.html', categoria=categoria, item=item)
+    return render_template(
+        'item.html',
+        categoria=categoria,
+        item=item,
+        login_session=login_session)
 
 
 @app.route('/catalog/new/', methods=['GET', 'POST'])
@@ -221,10 +227,14 @@ def adicionaItem():
                 categoria_id=request.form['categoria_id'])
             session.add(newItem)
             session.commit()
+            flash('Item Adicionado com sucesso !')
             return redirect(url_for('siteHome'))
         else:
             categorias = session.query(Categoria).all()
-            return render_template('newitem.html', categorias=categorias)
+            return render_template(
+                'newitem.html',
+                categorias=categorias,
+                login_session=login_session)
 
 
 @app.route('/catalog/<int:item_id>/edit/', methods=['GET', 'POST'])
@@ -242,6 +252,7 @@ def alteraItem(item_id):
                 item.categoria_id = request.form['categoria_id']
             session.add(item)
             session.commit()
+            flash('Item Alterado com sucesso !')
             return redirect(url_for(
                 'descricaoItem',
                 categoria_id=item.categoria_id,
@@ -251,7 +262,8 @@ def alteraItem(item_id):
             return render_template(
                 'edititem.html',
                 item=item,
-                categorias=categorias)
+                categorias=categorias,
+                login_session=login_session)
 
 
 @app.route('/catalog/<int:item_id>/delete/', methods=['GET', 'POST'])
@@ -263,13 +275,15 @@ def deletaItem(item_id):
         if request.method == 'POST':
             session.delete(itemToDelete)
             session.commit()
+            flash('Item Apagado com sucesso !')
             return redirect(url_for(
                 'catalogoItens',
                 categoria_id=itemToDelete.categoria_id))
         else:
             return render_template(
                 'deleteitem.html',
-                itemToDelete=itemToDelete)
+                itemToDelete=itemToDelete,
+                login_session=login_session)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<!-- Meta tags Obrigatórias -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+		<link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+		<title>Project 4</title>
+	</head>
+	<body class="bg-cinza">
+		<nav class="navbar navbar-light bg-darkblue justify-content-around">
+			<a class="navbar-brand" href = "{{url_for('siteHome')}}"><h2 class="bg-darkblue">Catalogo APP</h2></a>
+			{% if 'email' not in login_session %}
+				<a class="btn btn-primary my-2 my-sm-0 bg-laranja border-darkblue" href="{{url_for('showLogin')}}" role="button">Login</a>
+			{% else %}
+				<a class="btn btn-primary my-2 my-sm-0 bg-laranja border-darkblue" href="{{url_for('gdisconnect')}}" role="button">Logout</a>
+			{% endif %}
+		</nav>
+		<main>
+			{% with messages = get_flashed_messages() %}
+				{% if messages %}
+					<ul>
+					{% for message in messages %}
+						<li> <strong> {{ message }} </strong> </li>
+					{% endfor %}
+					</ul>
+				{% endif %}
+			{% endwith %}
+			{% block body %}
+			{% endblock %}
+		</main>
+		<!-- JavaScript (Opcional) -->
+		<!-- jQuery primeiro, depois Popper.js, depois Bootstrap JS -->
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+	</body>
+</html>
