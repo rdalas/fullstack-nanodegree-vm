@@ -3,7 +3,7 @@ from datetime import date, datetime
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker, joinedload
 from database import Base, Categoria, Item
-import crud
+
 from flask import session as login_session, flash
 import random
 import string
@@ -173,15 +173,17 @@ def catalogoJson():
 
 @app.route('/catalog/<int:categoria_id>/<int:item_id>/JSON/')
 def itemJson(categoria_id, item_id):
-    item = crud.bucaItem_porCategoriaId(categoria_id, item_id)
+    item = session.query(Item).filter_by(categoria_id=categoria_id, id=item_id)
+    item = item.one()
     return jsonify(item = item.serialize)
 
 
 @app.route('/')
 @app.route('/catalog/')
 def siteHome():
-    categoriasMenu = crud.buscaTodasCategorias()
-    ultimosItens = crud.ultimosItens()
+    categoriasMenu = session.query(Categoria).all()
+    ultimosItens = session.query(Item, Categoria).join(Categoria)
+    ultimosItens = ultimosItens.order_by(desc(Item.data_inclusao)).limit(10)
     return render_template(
         'home.html',
         categoriasMenu=categoriasMenu,
@@ -192,10 +194,11 @@ def siteHome():
 @app.route('/catalog/<int:categoria_id>/')
 @app.route('/catalog/<int:categoria_id>/items/')
 def catalogoItens(categoria_id):
-    categoriasMenu = crud.buscaTodasCategorias()
-    categoria = crud.buscaCategoria_porId(categoria_id)
-    itensCategoria = crud.buscaItens_porCategoria(categoria_id)
-    contador = crud.contaItens_porCategoria(categoria_id)
+    categoriasMenu = session.query(Categoria).all()
+    categoria = session.query(Categoria).filter_by(id=categoria_id).one()
+    query = session.query(Item).filter_by(categoria_id=categoria_id)
+    itensCategoria = query.all()
+    contador = query.count()
     return render_template(
         'items.html',
         categoriasMenu=categoriasMenu,
@@ -207,8 +210,9 @@ def catalogoItens(categoria_id):
 
 @app.route('/catalog/<int:categoria_id>/<int:item_id>/')
 def descricaoItem(categoria_id, item_id):
-    categoria = crud.buscaCategoria_porId(categoria_id)
-    item = crud.bucaItem_porCategoriaId(categoria_id, item_id)
+    categoria = session.query(Categoria).filter_by(id=categoria_id).one()
+    item = session.query(Item).filter_by(categoria_id=categoria_id, id=item_id)
+    item = item.one()
     return render_template(
         'item.html',
         categoria=categoria,
