@@ -171,6 +171,13 @@ def catalogoJson():
                 itens=[i.serialize for i in c.itens]) for c in categorias])
 
 
+@app.route('/catalog/<int:categoria_id>/<int:item_id>/JSON/')
+def itemJson(categoria_id, item_id):
+    item = session.query(Item).filter_by(categoria_id=categoria_id, id=item_id)
+    item = item.one()
+    return jsonify(item = item.serialize)
+
+
 @app.route('/')
 @app.route('/catalog/')
 def siteHome():
