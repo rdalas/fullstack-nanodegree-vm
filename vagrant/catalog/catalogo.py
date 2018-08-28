@@ -1,8 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
-from datetime import date, datetime
-from sqlalchemy import create_engine, desc
-from sqlalchemy.orm import sessionmaker, joinedload
-from database import Base, Categoria, Item
 import crud
 from flask import session as login_session, flash
 import random
@@ -20,14 +16,6 @@ app = Flask(__name__)
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Catalog Project"
-
-engine = create_engine(
-    'sqlite:///catalogo.db',
-    connect_args={'check_same_thread': False})
-Base.metadata.bind = engine
-
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
 
 
 @app.route('/login/')
@@ -222,17 +210,18 @@ def adicionaItem():
         return redirect(url_for('showLogin'))
     else:
         if request.method == 'POST':
-            newItem = Item(
-                nome=request.form['nome'],
-                descricao=request.form['descricao'],
-                data_inclusao=datetime.now(),
-                categoria_id=request.form['categoria_id'])
-            session.add(newItem)
-            session.commit()
-            flash('Item Adicionado com sucesso !')
-            return redirect(url_for('siteHome'))
+            nome=request.form['nome']
+            descricao=request.form['descricao']
+            categoria_id=request.form['categoria_id']
+            if nome and descricao and categoria_id:
+                crud.novoItem(nome, descricao, int(categoria_id))
+                flash('Item Adicionado com sucesso !')
+                return redirect(url_for('siteHome'))
+            else:
+                flash('Todos os campos devem ser preenchidos !')
+                return redirect(url_for('adicionaItem'))
         else:
-            categorias = session.query(Categoria).all()
+            categorias = crud.buscaTodasCategorias()
             return render_template(
                 'newitem.html',
                 categorias=categorias,
@@ -246,21 +235,23 @@ def alteraItem(item_id):
     else:
         item = session.query(Item).filter_by(id=item_id).one()
     	if request.method == 'POST':
-            if request.form['nome']:
-                item.nome = request.form['nome']
-            if request.form['descricao']:
-                item.descricao = request.form['descricao']
-            if request.form['categoria_id']:
-                item.categoria_id = request.form['categoria_id']
-            session.add(item)
-            session.commit()
-            flash('Item Alterado com sucesso !')
-            return redirect(url_for(
-                'descricaoItem',
-                categoria_id=item.categoria_id,
-                item_id=item.id))
+            nome = request.form['nome']
+            descricao = request.form['descricao']
+            categoria_id = request.form['categoria_id']
+            if nome and descricao and categoria_id:
+                item = crud.alteraItem(item_id, nome, descricao, categoria_id)
+                item_id = item[0]
+                categoria_id = item[1]
+                flash('Item Alterado com sucesso !')
+                return redirect(url_for(
+                    'descricaoItem',
+                    categoria_id=categoria_id,
+                    item_id=item_id))
+            else:
+                flash('Todos os campos devem ser preenchidos !')
+                return redirect(url_for('alteraItem', item_id=item.id))
         else:
-            categorias = session.query(Categoria).all()
+            categorias = crud.buscaTodasCategorias()
             return render_template(
                 'edititem.html',
                 item=item,
@@ -273,10 +264,9 @@ def deletaItem(item_id):
     if 'username' not in login_session:
         return redirect(url_for('showLogin'))
     else:
-        itemToDelete = session.query(Item).filter_by(id=item_id).one()
+        itemToDelete = crud.bucaItem_porId(item_id)
         if request.method == 'POST':
-            session.delete(itemToDelete)
-            session.commit()
+            crud.apagaItem(item_id)
             flash('Item Apagado com sucesso !')
             return redirect(url_for(
                 'catalogoItens',
