@@ -27,7 +27,8 @@ Item1 = Item(
             nome="Camisa do seu Time",
             descricao="A camisa do seu time do coracao",
             data_inclusao=datetime.now(),
-            categoria=categoria1)
+            categoria=categoria1,
+            user="rodrigo@necessario.com.br")
 session.add(Item1)
 session.commit()
 
@@ -35,7 +36,8 @@ Item2 = Item(
             nome="Meiao do seu Time",
             descricao="O meiao do seu time do coracao",
             data_inclusao=datetime.now(),
-            categoria=categoria1)
+            categoria=categoria1,
+            user="rodrigo@necessario.com.br")
 
 session.add(Item2)
 session.commit()
@@ -44,7 +46,8 @@ Item3 = Item(
             nome="Bermuda do seu Time",
             descricao="A bermuda do seu time do coracao",
             data_inclusao=datetime.now(),
-            categoria=categoria1)
+            categoria=categoria1,
+            user="rodrigo@necessario.com.br")
 
 session.add(Item3)
 session.commit()
@@ -57,7 +60,8 @@ Item1 = Item(
             nome="Quimono",
             descricao="O Quimono cobra",
             data_inclusao=datetime.now(),
-            categoria=categoria2)
+            categoria=categoria2,
+            user="rodrigo@necessario.com.br")
 session.add(Item1)
 session.commit()
 
@@ -65,7 +69,8 @@ Item2 = Item(
             nome="Luvas de box ",
             descricao="Luvas para treino de box",
             data_inclusao=datetime.now(),
-            categoria=categoria2)
+            categoria=categoria2,
+            user="rodrigo@necessario.com.br")
 session.add(Item2)
 session.commit()
 
@@ -73,7 +78,8 @@ Item3 = Item(
             nome="Protetor bucal",
             descricao="Proteja os seus dentes nos momentos dificeis",
             data_inclusao=datetime.now(),
-            categoria=categoria2)
+            categoria=categoria2,
+            user="rodrigo@necessario.com.br")
 session.add(Item3)
 session.commit()
 

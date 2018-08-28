@@ -1,8 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
-from datetime import date, datetime
-from sqlalchemy import create_engine, desc
-from sqlalchemy.orm import sessionmaker, joinedload
-from database import Base, Categoria, Item
+# Importa arquivo CRUD - acesso ao banco de dados
 import crud
 from flask import session as login_session, flash
 import random
@@ -20,14 +17,6 @@ app = Flask(__name__)
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Catalog Project"
-
-engine = create_engine(
-    'sqlite:///catalogo.db',
-    connect_args={'check_same_thread': False})
-Base.metadata.bind = engine
-
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
 
 
 @app.route('/login/')
@@ -160,10 +149,10 @@ def gdisconnect():
         return response
 
 
+# Inicio dos sites que consultam o banco de dados
 @app.route('/catalog/JSON/')
 def catalogoJson():
-    categorias = session.query(Categoria).options(joinedload(Categoria.itens))
-    categorias = categorias.all()
+    categorias = crud.catalogoJson()
     return jsonify(
         catalogo=[
             dict(
@@ -174,7 +163,7 @@ def catalogoJson():
 @app.route('/catalog/<int:categoria_id>/<int:item_id>/JSON/')
 def itemJson(categoria_id, item_id):
     item = crud.bucaItem_porCategoriaId(categoria_id, item_id)
-    return jsonify(item = item.serialize)
+    return jsonify(item=item.serialize)
 
 
 @app.route('/')
@@ -214,53 +203,70 @@ def descricaoItem(categoria_id, item_id):
         categoria=categoria,
         item=item,
         login_session=login_session)
+# Fim da consulta
 
 
+# Site para adicionar itens
 @app.route('/catalog/new/', methods=['GET', 'POST'])
 def adicionaItem():
     if 'username' not in login_session:
         return redirect(url_for('showLogin'))
     else:
         if request.method == 'POST':
-            newItem = Item(
-                nome=request.form['nome'],
-                descricao=request.form['descricao'],
-                data_inclusao=datetime.now(),
-                categoria_id=request.form['categoria_id'])
-            session.add(newItem)
-            session.commit()
-            flash('Item Adicionado com sucesso !')
-            return redirect(url_for('siteHome'))
+            nome = request.form['nome']
+            descricao = request.form['descricao']
+            categoria_id = request.form['categoria_id']
+            user = login_session['email']
+            if nome and descricao and categoria_id:
+                crud.novoItem(nome, descricao, int(categoria_id), user)
+                flash('Item Adicionado com sucesso !')
+                return redirect(url_for('siteHome'))
+            else:
+                flash('Todos os campos devem ser preenchidos !')
+                return redirect(url_for('adicionaItem'))
         else:
-            categorias = session.query(Categoria).all()
+            categorias = crud.buscaTodasCategorias()
             return render_template(
                 'newitem.html',
                 categorias=categorias,
                 login_session=login_session)
 
 
+# Site para alterar itens
 @app.route('/catalog/<int:item_id>/edit/', methods=['GET', 'POST'])
 def alteraItem(item_id):
     if 'username' not in login_session:
         return redirect(url_for('showLogin'))
     else:
-        item = session.query(Item).filter_by(id=item_id).one()
+        item = crud.bucaItem_porId(item_id)
     	if request.method == 'POST':
-            if request.form['nome']:
-                item.nome = request.form['nome']
-            if request.form['descricao']:
-                item.descricao = request.form['descricao']
-            if request.form['categoria_id']:
-                item.categoria_id = request.form['categoria_id']
-            session.add(item)
-            session.commit()
-            flash('Item Alterado com sucesso !')
-            return redirect(url_for(
-                'descricaoItem',
-                categoria_id=item.categoria_id,
-                item_id=item.id))
+            if item.user == login_session['email']:
+                nome = request.form['nome']
+                descricao = request.form['descricao']
+                categoria_id = request.form['categoria_id']
+                if nome and descricao and categoria_id:
+                    item = crud.alteraItem(
+                        item_id,
+                        nome,
+                        descricao,
+                        categoria_id)
+                    item_id = item[0]
+                    categoria_id = item[1]
+                    flash('Item Alterado com sucesso !')
+                    return redirect(url_for(
+                        'descricaoItem',
+                        categoria_id=categoria_id,
+                        item_id=item_id))
+                else:
+                    flash('Todos os campos devem ser preenchidos !')
+                    return redirect(url_for('alteraItem', item_id=item.id))
+            else:
+                flash(
+                    'Sem permissao para alterar o registro, voce nao e %s !'
+                    % item.user)
+                return redirect(url_for('alteraItem', item_id=item.id))
         else:
-            categorias = session.query(Categoria).all()
+            categorias = crud.buscaTodasCategorias()
             return render_template(
                 'edititem.html',
                 item=item,
@@ -268,19 +274,25 @@ def alteraItem(item_id):
                 login_session=login_session)
 
 
+# Site para deletar itens
 @app.route('/catalog/<int:item_id>/delete/', methods=['GET', 'POST'])
 def deletaItem(item_id):
     if 'username' not in login_session:
         return redirect(url_for('showLogin'))
     else:
-        itemToDelete = session.query(Item).filter_by(id=item_id).one()
+        itemToDelete = crud.bucaItem_porId(item_id)
         if request.method == 'POST':
-            session.delete(itemToDelete)
-            session.commit()
-            flash('Item Apagado com sucesso !')
-            return redirect(url_for(
-                'catalogoItens',
-                categoria_id=itemToDelete.categoria_id))
+            if itemToDelete.user == login_session['email']:
+                crud.apagaItem(item_id)
+                flash('Item Apagado com sucesso !')
+                return redirect(url_for(
+                    'catalogoItens',
+                    categoria_id=itemToDelete.categoria_id))
+            else:
+                flash(
+                    'Sem permissao para deletar o registro, voce nao e %s !'
+                    % itemToDelete.user)
+                return redirect(url_for('deletaItem', item_id=itemToDelete.id))
         else:
             return render_template(
                 'deleteitem.html',

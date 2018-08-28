@@ -31,6 +31,7 @@ class Item(Base):
     data_inclusao = Column(DATETIME)
     categoria_id = Column(Integer, ForeignKey('categoria.id'))
     categoria = relationship(Categoria, backref='itens')
+    user = Column(String(250), nullable=False)
 
     @property
     def serialize(self):
